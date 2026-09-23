@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jev 自然语言设计</title>
+<style>
+:root{font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--figma-color-text,#222);background:var(--figma-color-bg,#fff)}
+*{box-sizing:border-box}body{margin:0}.app{padding:16px;display:grid;gap:14px}
+header{display:flex;align-items:center;gap:8px}h1{font-size:15px;line-height:1.3;margin:0;font-weight:650;flex:1}.muted,.hint{color:var(--figma-color-text-secondary,#777);font-size:11px;line-height:1.45}.label{display:block;font-size:12px;font-weight:650;margin:0 0 7px}
+button,input,textarea{font:inherit;color:inherit}button{cursor:pointer;border:1px solid var(--figma-color-border,#d3d3d3);border-radius:6px;background:var(--figma-color-bg,#fff);padding:6px 10px;min-height:32px}button:hover{background:var(--figma-color-bg-hover,#f3f3f3)}button:disabled{opacity:.45;cursor:not-allowed}.primary{background:#0d75e8;border-color:#0d75e8;color:#fff;font-weight:600}.primary:hover{background:#0965ca}
+input,textarea{border:1px solid var(--figma-color-border,#ccc);border-radius:6px;background:var(--figma-color-bg,#fff);padding:8px;width:100%}textarea{resize:vertical;min-height:90px;line-height:1.5}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #0d75e8;outline-offset:2px}
+.iconButton{width:32px;height:32px;padding:0;display:grid;place-items:center;flex:none}.iconButton svg{width:16px;height:16px;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round}.settings{position:relative;border-color:transparent}.settings:after{content:"";position:absolute;right:3px;top:3px;width:7px;height:7px;border-radius:50%;background:#a0a0a0;box-shadow:0 0 0 2px var(--figma-color-bg,#fff)}.settings.ready:after{background:#17824b}.settings.offline:after{background:#bd2929}
+.connection{border:1px solid var(--figma-color-border,#ddd);border-radius:7px;padding:12px;display:grid;gap:8px}.connection[hidden],.history[hidden]{display:none}.connectionHead{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;font-weight:650}.connectionState{color:var(--figma-color-text-secondary,#777);font-size:11px;font-weight:400}.keyForm{display:flex;gap:7px}.keyForm input{min-width:0;flex:1}.connection .hint{margin:0}
+.controls{display:flex;gap:7px;margin-top:8px}.controls .primary{flex:1}.anchor{cursor:grab;border-style:dashed}.anchor:active{cursor:grabbing}.anchor.placed{border-style:solid;border-color:#17824b;color:#17824b;background:rgba(23,130,75,.06)}.mic{font-size:16px}.mic.available{color:#0d75e8}.mic.active{background:#c93434;border-color:#c93434;color:white}
+.section{border-top:1px solid var(--figma-color-border,#e5e5e5);padding-top:12px}.status{line-height:1.45;overflow-wrap:anywhere}.status:empty{display:none}.status.error{color:#bd2929}.status.success{color:#137447}.steps{margin:7px 0 0;padding-left:20px;max-height:160px;overflow:auto;display:grid;gap:5px}.steps:empty{display:none}.steps li{overflow-wrap:anywhere}.steps button{border:0;min-height:0;padding:0;text-align:left;text-decoration:underline;text-underline-offset:2px}.steps span{color:var(--figma-color-text-secondary,#777)}.hint:empty{display:none}[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main class="app">
+  <header>
+    <h1>Jev 自然语言设计</h1>
+    <span id="selectionStatus" class="muted">未选中对象</span>
+    <button id="settingsToggle" class="iconButton settings" type="button" aria-label="打开 Jev 连接设置" aria-controls="connection" aria-expanded="false" title="Jev 连接设置">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v2m0 13v2m8.5-8.5h-2m-13 0h-2m15.2-6.7-1.4 1.4M6.7 17.3l-1.4 1.4m13.4 0-1.4-1.4M6.7 6.7 5.3 5.3"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg>
+    </button>
+  </header>
+  <section id="connection" class="connection" hidden>
+    <div class="connectionHead"><span>Jev 连接</span><span id="connectionStatus" class="connectionState">正在检查…</span></div>
+    <form id="keyForm" class="keyForm" autocomplete="off">
+      <input id="apiKey" type="password" autocomplete="off" spellcheck="false" aria-label="TypeSafe API Key" placeholder="TypeSafe API Key">
+      <button id="saveKey" type="submit">连接</button>
+    </form>
+    <p class="hint">先在终端运行 npm run jev。Key 只保存在本机服务内存中。</p>
+  </section>
+  <section>
+    <label class="label" for="command">说出或输入指令</label>
+    <textarea id="command" placeholder="例如：在这里加一个圆，在中间写开始，然后放大一点"></textarea>
+    <div class="controls">
+      <button id="anchor" class="iconButton anchor" type="button" draggable="true" aria-label="创建位置：拖到 Figma 画布空白处" title="拖到画布空白处，设定“这里”">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v10M7 12h10"/></svg>
+      </button>
+      <button id="mic" class="iconButton mic" type="button" aria-label="开始语音输入" title="语音输入">🎙</button>
+      <button id="jevExecute" class="primary" type="button">执行</button>
+      <button id="undo" type="button" disabled>撤销</button>
+    </div>
+    <div id="interim" class="hint" aria-live="polite"></div>
+  </section>
+  <section id="history" class="section history" hidden>
+    <div class="label">执行记录</div>
+    <div id="status" class="status" role="status" aria-live="polite"></div>
+    <ol id="voiceSteps" class="steps" aria-label="语音执行步骤"></ol>
+  </section>
+</main>
+<!-- SCRIPT -->
+</body>
+</html>
