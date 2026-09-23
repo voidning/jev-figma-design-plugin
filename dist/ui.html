@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jev 自然语言设计</title>
+<style>
+:root{font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--figma-color-text,#222);background:var(--figma-color-bg,#fff)}
+*{box-sizing:border-box}body{margin:0}.app{padding:16px;display:grid;gap:14px}
+header{display:flex;align-items:center;gap:8px}h1{font-size:15px;line-height:1.3;margin:0;font-weight:650;flex:1}.muted,.hint{color:var(--figma-color-text-secondary,#777);font-size:11px;line-height:1.45}.label{display:block;font-size:12px;font-weight:650;margin:0 0 7px}
+button,input,textarea{font:inherit;color:inherit}button{cursor:pointer;border:1px solid var(--figma-color-border,#d3d3d3);border-radius:6px;background:var(--figma-color-bg,#fff);padding:6px 10px;min-height:32px}button:hover{background:var(--figma-color-bg-hover,#f3f3f3)}button:disabled{opacity:.45;cursor:not-allowed}.primary{background:#0d75e8;border-color:#0d75e8;color:#fff;font-weight:600}.primary:hover{background:#0965ca}
+input,textarea{border:1px solid var(--figma-color-border,#ccc);border-radius:6px;background:var(--figma-color-bg,#fff);padding:8px;width:100%}textarea{resize:vertical;min-height:90px;line-height:1.5}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #0d75e8;outline-offset:2px}
+.iconButton{width:32px;height:32px;padding:0;display:grid;place-items:center;flex:none}.iconButton svg{width:16px;height:16px;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round}.settings{position:relative;border-color:transparent}.settings:after{content:"";position:absolute;right:3px;top:3px;width:7px;height:7px;border-radius:50%;background:#a0a0a0;box-shadow:0 0 0 2px var(--figma-color-bg,#fff)}.settings.ready:after{background:#17824b}.settings.offline:after{background:#bd2929}
+.connection{border:1px solid var(--figma-color-border,#ddd);border-radius:7px;padding:12px;display:grid;gap:8px}.connection[hidden],.history[hidden]{display:none}.connectionHead{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;font-weight:650}.connectionState{color:var(--figma-color-text-secondary,#777);font-size:11px;font-weight:400}.keyForm{display:flex;gap:7px}.keyForm input{min-width:0;flex:1}.connection .hint{margin:0}
+.controls{display:flex;gap:7px;margin-top:8px}.controls .primary{flex:1}.anchor{cursor:grab;border-style:dashed}.anchor:active{cursor:grabbing}.anchor.placed{border-style:solid;border-color:#17824b;color:#17824b;background:rgba(23,130,75,.06)}.mic{font-size:16px}.mic.available{color:#0d75e8}.mic.active{background:#c93434;border-color:#c93434;color:white}
+.section{border-top:1px solid var(--figma-color-border,#e5e5e5);padding-top:12px}.status{line-height:1.45;overflow-wrap:anywhere}.status:empty{display:none}.status.error{color:#bd2929}.status.success{color:#137447}.steps{margin:7px 0 0;padding-left:20px;max-height:160px;overflow:auto;display:grid;gap:5px}.steps:empty{display:none}.steps li{overflow-wrap:anywhere}.steps button{border:0;min-height:0;padding:0;text-align:left;text-decoration:underline;text-underline-offset:2px}.steps span{color:var(--figma-color-text-secondary,#777)}.hint:empty{display:none}[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main class="app">
+  <header>
+    <h1>Jev 自然语言设计</h1>
+    <span id="selectionStatus" class="muted">未选中对象</span>
+    <button id="settingsToggle" class="iconButton settings" type="button" aria-label="打开 Jev 连接设置" aria-controls="connection" aria-expanded="false" title="Jev 连接设置">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v2m0 13v2m8.5-8.5h-2m-13 0h-2m15.2-6.7-1.4 1.4M6.7 17.3l-1.4 1.4m13.4 0-1.4-1.4M6.7 6.7 5.3 5.3"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg>
+    </button>
+  </header>
+  <section id="connection" class="connection" hidden>
+    <div class="connectionHead"><span>Jev 连接</span><span id="connectionStatus" class="connectionState">正在检查…</span></div>
+    <form id="keyForm" class="keyForm" autocomplete="off">
+      <input id="apiKey" type="password" autocomplete="off" spellcheck="false" aria-label="TypeSafe API Key" placeholder="TypeSafe API Key">
+      <button id="saveKey" type="submit">连接</button>
+    </form>
+    <p class="hint">先在终端运行 npm run jev。Key 只保存在本机服务内存中。</p>
+  </section>
+  <section>
+    <label class="label" for="command">说出或输入指令</label>
+    <textarea id="command" placeholder="例如：在这里加一个圆，在中间写开始，然后放大一点"></textarea>
+    <div class="controls">
+      <button id="anchor" class="iconButton anchor" type="button" draggable="true" aria-label="创建位置：拖到 Figma 画布空白处" title="拖到画布空白处，设定“这里”">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v10M7 12h10"/></svg>
+      </button>
+      <button id="mic" class="iconButton mic" type="button" aria-label="开始语音输入" title="语音输入">🎙</button>
+      <button id="jevExecute" class="primary" type="button">执行</button>
+      <button id="undo" type="button" disabled>撤销</button>
+    </div>
+    <div id="interim" class="hint" aria-live="polite"></div>
+  </section>
+  <section id="history" class="section history" hidden>
+    <div class="label">执行记录</div>
+    <div id="status" class="status" role="status" aria-live="polite"></div>
+    <ol id="voiceSteps" class="steps" aria-label="语音执行步骤"></ol>
+  </section>
+</main>
+<script>"use strict";
+(() => {
+  var __defProp = Object.defineProperty;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+
+  // src/voice-queue.ts
+  var AckQueue = class {
+    constructor(dispatch) {
+      this.dispatch = dispatch;
+      __publicField(this, "pending", []);
+      __publicField(this, "active", false);
+    }
+    enqueue(item) {
+      this.pending.push(item);
+      this.next();
+    }
+    finish() {
+      this.active = false;
+      this.next();
+    }
+    next() {
+      if (this.active || !this.pending.length) return;
+      this.active = true;
+      this.dispatch(this.pending.shift());
+    }
+  };
+  function collectSpeech(results, start, seen) {
+    const final = [];
+    let interim2 = "";
+    for (let i = start; i < results.length; i++) {
+      const transcript = String(results[i]?.[0]?.transcript || "").trim();
+      if (!transcript) continue;
+      if (results[i].isFinal) {
+        if (seen.has(i)) continue;
+        seen.add(i);
+        final.push(transcript);
+      } else interim2 += transcript + " ";
+    }
+    return { final, interim: interim2.trim() };
+  }
+  function isStopPhrase(text) {
+    const compact = text.replace(/[，,。.！!\s]/g, "");
+    return /^(?:好)?(?:(?:就这样)?(?:停|停止|结束)(?:吧|了)?|(?:停|停止|结束)(?:吧|了)?就这样)$/.test(compact);
+  }
+
+  // src/ui.ts
+  var $ = (id) => document.getElementById(id);
+  var command = $("command");
+  var mic = $("mic");
+  var execute = $("jevExecute");
+  var undo = $("undo");
+  var keyInput = $("apiKey");
+  var status = $("status");
+  var steps = $("voiceSteps");
+  var interim = $("interim");
+  var settings = $("settingsToggle");
+  var connection = $("connection");
+  var anchor = $("anchor");
+  var history = $("history");
+  var post = (type, data = {}) => parent.postMessage({ pluginMessage: { type, ...data } }, "*");
+  var stepStatus = /* @__PURE__ */ new Map();
+  var stepId = 0;
+  var queue = new AckQueue((next) => post("auto", { text: next.text, stepId: next.id }));
+  function message(text, kind = "") {
+    history.hidden = false;
+    status.textContent = text;
+    status.className = "status " + kind;
+  }
+  function showConnection(show) {
+    connection.hidden = !show;
+    settings.setAttribute("aria-expanded", String(show));
+    settings.setAttribute("aria-label", show ? "\u5173\u95ED Jev \u8FDE\u63A5\u8BBE\u7F6E" : "\u6253\u5F00 Jev \u8FDE\u63A5\u8BBE\u7F6E");
+    if (show) keyInput.focus();
+    else settings.focus();
+  }
+  settings.addEventListener("click", () => showConnection(connection.hidden));
+  function connected(ready, serviceOnline = true) {
+    $("connectionStatus").textContent = ready ? "\u672C\u673A Jev \u5DF2\u914D\u7F6E" : serviceOnline ? "\u8F93\u5165 TypeSafe API Key" : "\u5148\u542F\u52A8\u672C\u673A Jev \u670D\u52A1";
+    settings.classList.toggle("ready", ready);
+    settings.classList.toggle("offline", !ready && !serviceOnline);
+    settings.title = ready ? "Jev \u5DF2\u8FDE\u63A5\uFF0C\u70B9\u51FB\u53EF\u4FEE\u6539 Key" : serviceOnline ? "\u914D\u7F6E TypeSafe API Key" : "\u672C\u673A Jev \u670D\u52A1\u672A\u8FDE\u63A5";
+    execute.disabled = !ready;
+    mic.disabled = !ready || !Speech;
+    mic.classList.toggle("available", ready && !!Speech);
+    if (ready && !connection.hidden) showConnection(false);
+  }
+  async function refreshConnection() {
+    try {
+      const response = await fetch("http://localhost:8788/health");
+      const health = await response.json();
+      connected(response.ok && health.ready === true);
+    } catch {
+      connected(false, false);
+    }
+  }
+  $("keyForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const key = keyInput.value.trim();
+    if (!key) {
+      message("\u8BF7\u8F93\u5165 TypeSafe API Key\u3002", "error");
+      keyInput.focus();
+      return;
+    }
+    const save = $("saveKey");
+    save.disabled = true;
+    try {
+      const response = await fetch("http://localhost:8788/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key })
+      });
+      const result = await response.json();
+      if (!response.ok) throw Error(result.error || "\u8FDE\u63A5\u5931\u8D25\u3002");
+      keyInput.value = "";
+      connected(true);
+      message("Key \u5DF2\u63D0\u4EA4\u5230\u672C\u673A\u670D\u52A1\uFF1B\u53D1\u9001\u6307\u4EE4\u65F6\u4F1A\u9A8C\u8BC1\u3002", "success");
+    } catch (error) {
+      message(error instanceof TypeError ? "\u65E0\u6CD5\u8FDE\u63A5\u672C\u673A\u670D\u52A1\uFF1B\u8BF7\u5148\u8FD0\u884C npm run jev\u3002" : error instanceof Error ? error.message : "\u8FDE\u63A5\u5931\u8D25\u3002", "error");
+    } finally {
+      save.disabled = false;
+    }
+  });
+  void refreshConnection();
+  anchor.addEventListener("click", () => message("\u6309\u4F4F\u5DE6\u4FA7\u5B9A\u4F4D\u56FE\u6807\uFF0C\u62D6\u51FA\u63D2\u4EF6\u7A97\u53E3\u5E76\u653E\u5230\u753B\u5E03\u7A7A\u767D\u5904\u3002"));
+  anchor.addEventListener("dragend", (event) => {
+    const drag = event;
+    if (drag.view?.length === 0) {
+      message("\u8BF7\u628A\u521B\u5EFA\u4F4D\u7F6E\u62D6\u51FA\u63D2\u4EF6\u7A97\u53E3\uFF0C\u518D\u653E\u5230\u753B\u5E03\u7A7A\u767D\u5904\u3002");
+      return;
+    }
+    parent.postMessage({ pluginDrop: {
+      clientX: drag.clientX,
+      clientY: drag.clientY,
+      items: [{ type: "text/plain", data: "creation-anchor" }],
+      dropMetadata: { kind: "creation-anchor" }
+    } }, "*");
+    message("\u6B63\u5728\u7B49\u5F85 Figma \u786E\u8BA4\u753B\u5E03\u4F4D\u7F6E\u2026");
+  });
+  window.addEventListener("message", async (event) => {
+    const request = event.data?.pluginMessage;
+    if (request?.type !== "jevRequest") return;
+    try {
+      const response = await fetch("http://localhost:8788/interpret", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: request.text, context: request.context }),
+        signal: AbortSignal.timeout(45e3)
+      });
+      let payload;
+      try {
+        payload = await response.json();
+      } catch {
+        payload = { error: `Jev \u670D\u52A1\u8FD4\u56DE\u4E86\u65E0\u6548\u54CD\u5E94\uFF08HTTP ${response.status}\uFF09\u3002` };
+      }
+      if (response.status === 503) void refreshConnection();
+      post("jevReply", { id: request.id, ok: response.ok, status: response.status, payload });
+    } catch {
+      connected(false, false);
+      post("jevReply", { id: request.id, networkError: true });
+    }
+  });
+  execute.addEventListener("click", () => {
+    const text = command.value.trim();
+    if (!text) {
+      message("\u8BF7\u5148\u8BF4\u51FA\u6216\u8F93\u5165\u6307\u4EE4\u3002", "error");
+      command.focus();
+      return;
+    }
+    message("Jev \u6B63\u5728\u5224\u65AD\u5E76\u6267\u884C\u2026");
+    post("auto", { text });
+  });
+  command.addEventListener("keydown", (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+      event.preventDefault();
+      execute.click();
+    }
+  });
+  undo.addEventListener("click", () => post("undo"));
+  window.addEventListener("message", (event) => {
+    const result = event.data?.pluginMessage;
+    if (!result) return;
+    if (result.type === "jevStatus") {
+      if (result.ready === true) connected(true);
+      else void refreshConnection();
+    }
+    if (result.type === "context") {
+      $("selectionStatus").textContent = result.count ? `\u5DF2\u9009 ${result.count} \u4E2A\u5BF9\u8C61` : "\u672A\u9009\u4E2D\u5BF9\u8C61";
+      anchor.classList.toggle("placed", !!result.anchor);
+      anchor.title = result.anchor ? `\u521B\u5EFA\u4F4D\u7F6E ${result.anchor}\uFF1B\u62D6\u52A8\u53EF\u91CD\u8BBE` : "\u62D6\u5230\u753B\u5E03\u7A7A\u767D\u5904\uFF0C\u8BBE\u5B9A\u201C\u8FD9\u91CC\u201D";
+      anchor.setAttribute("aria-label", result.anchor ? `\u521B\u5EFA\u4F4D\u7F6E ${result.anchor}\uFF0C\u62D6\u52A8\u53EF\u91CD\u8BBE` : "\u521B\u5EFA\u4F4D\u7F6E\uFF1A\u62D6\u5230 Figma \u753B\u5E03\u7A7A\u767D\u5904");
+      undo.disabled = !result.canUndo;
+    }
+    if (result.type === "autoPlan" && typeof result.stepId === "number") {
+      stepStatus.get(result.stepId)?.replaceChildren(document.createTextNode(" \xB7 \u5C06\u6267\u884C\uFF1A" + result.rows.join("\uFF1B")));
+    }
+    if (result.type === "done") {
+      message(result.message, "success");
+      undo.disabled = !result.canUndo;
+      if (typeof result.stepId === "number") finishStep(result.stepId, " \xB7 " + result.message);
+    }
+    if (result.type === "error") {
+      message(result.message, "error");
+      if (typeof result.stepId === "number") finishStep(result.stepId, " \xB7 \u5931\u8D25\uFF1A" + result.message);
+    }
+  });
+  function finishStep(id, text) {
+    stepStatus.get(id)?.replaceChildren(document.createTextNode(text));
+    queue.finish();
+  }
+  var Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var listening = false;
+  var wantListening = false;
+  var recognition = null;
+  if (!Speech) {
+    mic.title = "\u6B64\u7A97\u53E3\u4E0D\u652F\u6301\u8BED\u97F3\u8F93\u5165\uFF0C\u53EF\u4F7F\u7528\u7CFB\u7EDF\u542C\u5199\u6216\u6587\u5B57\u8F93\u5165";
+    mic.setAttribute("aria-label", mic.title);
+    mic.disabled = true;
+  } else {
+    mic.title = "\u70B9\u51FB\u540E\u6301\u7EED\u8046\u542C\uFF0C\u8BF4\u201C\u505C\u201D\u7ED3\u675F";
+    mic.addEventListener("click", () => {
+      if (listening) {
+        wantListening = false;
+        recognition?.stop();
+        message("\u5DF2\u505C\u6B62\u8046\u542C\uFF1B\u5DF2\u63A5\u6536\u7684\u6307\u4EE4\u4F1A\u7EE7\u7EED\u6267\u884C\u3002");
+        return;
+      }
+      try {
+        const rec = new Speech();
+        recognition = rec;
+        rec.lang = "zh-CN";
+        rec.continuous = true;
+        rec.interimResults = true;
+        const seenFinal = /* @__PURE__ */ new Set();
+        wantListening = true;
+        rec.onresult = (event) => {
+          if (!wantListening) return;
+          const result = collectSpeech(event.results, event.resultIndex, seenFinal);
+          for (const transcript of result.final) {
+            if (isStopPhrase(transcript)) {
+              wantListening = false;
+              rec.stop();
+              message("\u5DF2\u505C\u6B62\u8046\u542C\uFF1B\u5DF2\u63A5\u6536\u7684\u6307\u4EE4\u4F1A\u7EE7\u7EED\u6267\u884C\u3002", "success");
+              break;
+            }
+            const id = ++stepId;
+            const item = document.createElement("li");
+            const button = document.createElement("button");
+            button.type = "button";
+            button.textContent = transcript;
+            button.title = "\u8F7D\u5165\u8FD9\u53E5\u5230\u8F93\u5165\u6846";
+            button.addEventListener("click", () => {
+              command.value = transcript;
+              command.focus();
+            });
+            const state = document.createElement("span");
+            state.textContent = " \xB7 \u7B49\u5F85 Jev \u5224\u65AD";
+            stepStatus.set(id, state);
+            item.append(button, state);
+            steps.append(item);
+            history.hidden = false;
+            command.value = transcript;
+            queue.enqueue({ id, text: transcript });
+          }
+          interim.textContent = result.interim ? "\u4E34\u65F6\u8F6C\u5199\uFF1A" + result.interim : "";
+        };
+        rec.onerror = (event) => {
+          if (["not-allowed", "service-not-allowed", "audio-capture"].includes(event.error)) wantListening = false;
+          message(`\u8BED\u97F3\u8F93\u5165\u5931\u8D25\uFF1A${event.error || "\u672A\u77E5\u9519\u8BEF"}\u3002\u53EF\u6539\u7528\u6587\u5B57\u8F93\u5165\u3002`, "error");
+        };
+        rec.onend = () => {
+          listening = false;
+          interim.textContent = "";
+          mic.classList.remove("active");
+          mic.setAttribute("aria-label", "\u5F00\u59CB\u8BED\u97F3\u8F93\u5165");
+          if (wantListening) {
+            try {
+              seenFinal.clear();
+              rec.start();
+              listening = true;
+              mic.classList.add("active");
+              mic.setAttribute("aria-label", "\u505C\u6B62\u8BED\u97F3\u8F93\u5165");
+            } catch {
+              wantListening = false;
+              message("\u8BED\u97F3\u8BC6\u522B\u5DF2\u7ED3\u675F\uFF0C\u8BF7\u91CD\u65B0\u70B9\u51FB\u9EA6\u514B\u98CE\u3002", "error");
+            }
+          }
+        };
+        rec.start();
+        listening = true;
+        mic.classList.add("active");
+        mic.setAttribute("aria-label", "\u505C\u6B62\u8BED\u97F3\u8F93\u5165");
+        message("\u6B63\u5728\u542C\uFF0C\u8BF7\u8BF4\u51FA\u6307\u4EE4\u2026");
+      } catch {
+        wantListening = false;
+        message("\u65E0\u6CD5\u542F\u52A8\u9EA6\u514B\u98CE\uFF1B\u53EF\u4F7F\u7528\u7CFB\u7EDF\u542C\u5199\u6216\u6587\u5B57\u8F93\u5165\u3002", "error");
+        mic.disabled = true;
+        mic.classList.remove("available");
+      }
+    });
+  }
+  var app = document.querySelector(".app");
+  var lastHeight = 0;
+  var resize = () => {
+    const height = Math.max(220, Math.min(640, Math.ceil(app.getBoundingClientRect().height)));
+    if (height !== lastHeight) {
+      lastHeight = height;
+      post("resizeUI", { height });
+    }
+  };
+  new ResizeObserver(resize).observe(app);
+  resize();
+})();
+</script>
+</body>
+</html>
