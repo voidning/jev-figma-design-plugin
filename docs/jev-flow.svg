@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="304" viewBox="0 0 1600 640" role="img" aria-labelledby="title desc">
+<title id="title">Jev 判断，代码调用 API</title><desc id="desc">从左到右：在这里加一个圆，同时分给操作、形状、位置三个 Jev 节点；代码汇总校验后调用 Figma API 创建圆，设置尺寸和坐标，显示画布结果。其他判断节点省略。</desc>
+<defs><marker id="arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7" fill="none" stroke="#ad8b76" stroke-width="1.5"/></marker></defs>
+<rect width="1600" height="640" fill="#faf8f4"/><g font-family="PingFang SC, Microsoft YaHei, sans-serif" fill="#292923">
+
+<text x="40" y="54" font-size="31" fill="#292923" font-weight="600">Jev 判断，代码调用 API</text>
+<text x="40" y="123" font-size="23" fill="#292923" font-weight="600">一句话</text>
+<text x="365" y="123" font-size="23" fill="#292923" font-weight="600">Jev · 并行判断</text>
+<text x="875" y="123" font-size="23" fill="#292923" font-weight="600">Figma API · 代码执行</text>
+<text x="1340" y="123" font-size="23" fill="#292923" font-weight="600">画布结果</text>
+<rect x="40" y="276" width="255" height="150" rx="15" fill="#fffefa" stroke="#dcd7ce"/>
+<text x="59" y="328" font-size="27" fill="#292923" font-weight="600">在这里加一个圆</text>
+<text x="59" y="386" font-size="19" fill="#77766e" font-weight="400">原文 + 当前画布信息</text>
+<path d="M295 351 H328" fill="none" stroke="#ad8b76" stroke-width="2"/>
+<path d="M328 224 V474" fill="none" stroke="#ad8b76" stroke-width="2"/>
+<path d="M328 224 H357" fill="none" stroke="#ad8b76" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="365" y="174" width="350" height="100" rx="15" fill="#fffefa" stroke="#dcd7ce"/>
+<text x="383" y="205" font-size="22" fill="#292923" font-weight="600">做什么？</text>
+<rect x="383" y="223" width="74" height="34" rx="15" fill="#f3dfce" stroke="#f3dfce"/>
+<text x="397" y="247" font-size="20" fill="#995c39" font-weight="600">添加</text>
+<text x="471" y="247" font-size="18" fill="#77766e" font-weight="400">删除 / 设置 / …</text>
+<path d="M715 224 H756" fill="none" stroke="#ad8b76" stroke-width="2"/>
+<path d="M328 349 H357" fill="none" stroke="#ad8b76" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="365" y="299" width="350" height="100" rx="15" fill="#fffefa" stroke="#dcd7ce"/>
+<text x="383" y="330" font-size="22" fill="#292923" font-weight="600">什么形状？</text>
+<rect x="383" y="348" width="74" height="34" rx="15" fill="#f3dfce" stroke="#f3dfce"/>
+<text x="397" y="372" font-size="20" fill="#995c39" font-weight="600">圆</text>
+<text x="471" y="372" font-size="18" fill="#77766e" font-weight="400">矩形 / 未说明</text>
+<path d="M715 349 H756" fill="none" stroke="#ad8b76" stroke-width="2"/>
+<path d="M328 474 H357" fill="none" stroke="#ad8b76" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="365" y="424" width="350" height="100" rx="15" fill="#fffefa" stroke="#dcd7ce"/>
+<text x="383" y="455" font-size="22" fill="#292923" font-weight="600">放哪里？</text>
+<rect x="383" y="473" width="74" height="34" rx="15" fill="#f3dfce" stroke="#f3dfce"/>
+<text x="397" y="497" font-size="20" fill="#995c39" font-weight="600">这里</text>
+<text x="471" y="497" font-size="18" fill="#77766e" font-weight="400">左 / 右 / 居中 / …</text>
+<path d="M715 474 H756" fill="none" stroke="#ad8b76" stroke-width="2"/>
+<path d="M756 224 V474" fill="none" stroke="#ad8b76" stroke-width="2"/>
+<path d="M756 351 H865" fill="none" stroke="#ad8b76" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="778" y="310" font-size="18" fill="#77766e" font-weight="400">汇总</text>
+<text x="778" y="336" font-size="18" fill="#77766e" font-weight="400">校验</text>
+<text x="389" y="565" font-size="20" fill="#77766e" font-weight="400">… 其他判断节点</text>
+<rect x="875" y="205" width="405" height="290" rx="15" fill="#fffefa" stroke="#dcd7ce"/>
+<text x="899" y="242" font-size="20" fill="#995c39" font-weight="600">创建圆形</text>
+<text x="899" y="278" font-size="19" fill="#292923" font-weight="400" font-family="Menlo, monospace">node = figma.createEllipse()</text>
+<text x="899" y="315" font-size="19" fill="#292923" font-weight="400" font-family="Menlo, monospace">node.resize(80, 80)</text>
+<path d="M899 340 H1256" stroke="#e7dfd5"/>
+<text x="899" y="374" font-size="20" fill="#995c39" font-weight="600">放到落点</text>
+<text x="899" y="410" font-size="19" fill="#292923" font-weight="400" font-family="Menlo, monospace">node.x = anchor.x</text>
+<text x="899" y="447" font-size="19" fill="#292923" font-weight="400" font-family="Menlo, monospace">node.y = anchor.y</text>
+<path d="M1280 351 H1330" fill="none" stroke="#ad8b76" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="1340" y="248" width="220" height="210" rx="15" fill="#fffefa" stroke="#dcd7ce"/>
+<circle cx="1360" cy="270" r="1" fill="#ddd7ce"/>
+<circle cx="1360" cy="290" r="1" fill="#ddd7ce"/>
+<circle cx="1360" cy="310" r="1" fill="#ddd7ce"/>
+<circle cx="1360" cy="330" r="1" fill="#ddd7ce"/>
+<circle cx="1360" cy="350" r="1" fill="#ddd7ce"/>
+<circle cx="1360" cy="370" r="1" fill="#ddd7ce"/>
+<circle cx="1360" cy="390" r="1" fill="#ddd7ce"/>
+<circle cx="1360" cy="410" r="1" fill="#ddd7ce"/>
+<circle cx="1360" cy="430" r="1" fill="#ddd7ce"/>
+<circle cx="1380" cy="270" r="1" fill="#ddd7ce"/>
+<circle cx="1380" cy="290" r="1" fill="#ddd7ce"/>
+<circle cx="1380" cy="310" r="1" fill="#ddd7ce"/>
+<circle cx="1380" cy="330" r="1" fill="#ddd7ce"/>
+<circle cx="1380" cy="350" r="1" fill="#ddd7ce"/>
+<circle cx="1380" cy="370" r="1" fill="#ddd7ce"/>
+<circle cx="1380" cy="390" r="1" fill="#ddd7ce"/>
+<circle cx="1380" cy="410" r="1" fill="#ddd7ce"/>
+<circle cx="1380" cy="430" r="1" fill="#ddd7ce"/>
+<circle cx="1400" cy="270" r="1" fill="#ddd7ce"/>
+<circle cx="1400" cy="290" r="1" fill="#ddd7ce"/>
+<circle cx="1400" cy="310" r="1" fill="#ddd7ce"/>
+<circle cx="1400" cy="330" r="1" fill="#ddd7ce"/>
+<circle cx="1400" cy="350" r="1" fill="#ddd7ce"/>
+<circle cx="1400" cy="370" r="1" fill="#ddd7ce"/>
+<circle cx="1400" cy="390" r="1" fill="#ddd7ce"/>
+<circle cx="1400" cy="410" r="1" fill="#ddd7ce"/>
+<circle cx="1400" cy="430" r="1" fill="#ddd7ce"/>
+<circle cx="1420" cy="270" r="1" fill="#ddd7ce"/>
+<circle cx="1420" cy="290" r="1" fill="#ddd7ce"/>
+<circle cx="1420" cy="310" r="1" fill="#ddd7ce"/>
+<circle cx="1420" cy="330" r="1" fill="#ddd7ce"/>
+<circle cx="1420" cy="350" r="1" fill="#ddd7ce"/>
+<circle cx="1420" cy="370" r="1" fill="#ddd7ce"/>
+<circle cx="1420" cy="390" r="1" fill="#ddd7ce"/>
+<circle cx="1420" cy="410" r="1" fill="#ddd7ce"/>
+<circle cx="1420" cy="430" r="1" fill="#ddd7ce"/>
+<circle cx="1440" cy="270" r="1" fill="#ddd7ce"/>
+<circle cx="1440" cy="290" r="1" fill="#ddd7ce"/>
+<circle cx="1440" cy="310" r="1" fill="#ddd7ce"/>
+<circle cx="1440" cy="330" r="1" fill="#ddd7ce"/>
+<circle cx="1440" cy="350" r="1" fill="#ddd7ce"/>
+<circle cx="1440" cy="370" r="1" fill="#ddd7ce"/>
+<circle cx="1440" cy="390" r="1" fill="#ddd7ce"/>
+<circle cx="1440" cy="410" r="1" fill="#ddd7ce"/>
+<circle cx="1440" cy="430" r="1" fill="#ddd7ce"/>
+<circle cx="1460" cy="270" r="1" fill="#ddd7ce"/>
+<circle cx="1460" cy="290" r="1" fill="#ddd7ce"/>
+<circle cx="1460" cy="310" r="1" fill="#ddd7ce"/>
+<circle cx="1460" cy="330" r="1" fill="#ddd7ce"/>
+<circle cx="1460" cy="350" r="1" fill="#ddd7ce"/>
+<circle cx="1460" cy="370" r="1" fill="#ddd7ce"/>
+<circle cx="1460" cy="390" r="1" fill="#ddd7ce"/>
+<circle cx="1460" cy="410" r="1" fill="#ddd7ce"/>
+<circle cx="1460" cy="430" r="1" fill="#ddd7ce"/>
+<circle cx="1480" cy="270" r="1" fill="#ddd7ce"/>
+<circle cx="1480" cy="290" r="1" fill="#ddd7ce"/>
+<circle cx="1480" cy="310" r="1" fill="#ddd7ce"/>
+<circle cx="1480" cy="330" r="1" fill="#ddd7ce"/>
+<circle cx="1480" cy="350" r="1" fill="#ddd7ce"/>
+<circle cx="1480" cy="370" r="1" fill="#ddd7ce"/>
+<circle cx="1480" cy="390" r="1" fill="#ddd7ce"/>
+<circle cx="1480" cy="410" r="1" fill="#ddd7ce"/>
+<circle cx="1480" cy="430" r="1" fill="#ddd7ce"/>
+<circle cx="1500" cy="270" r="1" fill="#ddd7ce"/>
+<circle cx="1500" cy="290" r="1" fill="#ddd7ce"/>
+<circle cx="1500" cy="310" r="1" fill="#ddd7ce"/>
+<circle cx="1500" cy="330" r="1" fill="#ddd7ce"/>
+<circle cx="1500" cy="350" r="1" fill="#ddd7ce"/>
+<circle cx="1500" cy="370" r="1" fill="#ddd7ce"/>
+<circle cx="1500" cy="390" r="1" fill="#ddd7ce"/>
+<circle cx="1500" cy="410" r="1" fill="#ddd7ce"/>
+<circle cx="1500" cy="430" r="1" fill="#ddd7ce"/>
+<circle cx="1520" cy="270" r="1" fill="#ddd7ce"/>
+<circle cx="1520" cy="290" r="1" fill="#ddd7ce"/>
+<circle cx="1520" cy="310" r="1" fill="#ddd7ce"/>
+<circle cx="1520" cy="330" r="1" fill="#ddd7ce"/>
+<circle cx="1520" cy="350" r="1" fill="#ddd7ce"/>
+<circle cx="1520" cy="370" r="1" fill="#ddd7ce"/>
+<circle cx="1520" cy="390" r="1" fill="#ddd7ce"/>
+<circle cx="1520" cy="410" r="1" fill="#ddd7ce"/>
+<circle cx="1520" cy="430" r="1" fill="#ddd7ce"/>
+<circle cx="1540" cy="270" r="1" fill="#ddd7ce"/>
+<circle cx="1540" cy="290" r="1" fill="#ddd7ce"/>
+<circle cx="1540" cy="310" r="1" fill="#ddd7ce"/>
+<circle cx="1540" cy="330" r="1" fill="#ddd7ce"/>
+<circle cx="1540" cy="350" r="1" fill="#ddd7ce"/>
+<circle cx="1540" cy="370" r="1" fill="#ddd7ce"/>
+<circle cx="1540" cy="390" r="1" fill="#ddd7ce"/>
+<circle cx="1540" cy="410" r="1" fill="#ddd7ce"/>
+<circle cx="1540" cy="430" r="1" fill="#ddd7ce"/>
+<circle cx="1450" cy="353" r="47" fill="#e7b594" stroke="#9a6140" stroke-width="2"/>
+<rect x="1403" y="306" width="94" height="94" fill="none" stroke="#a98b75" stroke-dasharray="4 4"/>
+<text x="1376" y="495" font-size="22" fill="#292923" font-weight="600">可编辑的圆</text>
+<text x="40" y="612" font-size="19" fill="#77766e" font-weight="400">示意：橙色为选中答案；坐标来自拖放落点，尺寸由代码设定。</text>
+</g></svg>
