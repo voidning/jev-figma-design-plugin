@@ -1,0 +1,10 @@
+{
+  "name": "Jev 自然语言设计（可组合）",
+  "id": "jev-natural-language-design-composable",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "ui": "dist/ui.html",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {"allowedDomains": ["none"], "devAllowedDomains": ["http://localhost:8788"]}
+}

@@ -1,0 +1,7 @@
+{
+  "name": "jev-figma-design-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {"build": "node build.mjs", "check": "tsc --noEmit", "test": "vitest run && node --test server/interpret.node.mjs server/jev.node.mjs", "dev": "node build.mjs --watch", "jev": "node server/jev.mjs", "smoke": "node tests/host-smoke.mjs && node tests/workflow-smoke.mjs"},
+  "devDependencies": {"@figma/plugin-typings": "^1.138.0", "esbuild": "^0.25.0", "typescript": "^5.9.0", "vitest": "^3.2.0"}
+}
