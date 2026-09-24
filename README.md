@@ -1,38 +1,26 @@
-# Jev × Figma: make a model understand design instructions
+# Jev × Figma：让模型听懂设计指令
 
-> **English** | [中文](README.zh-CN.md)
+> **中文** | [English](README.en.md)
 
-An experiment with **Jev**: you say "add a circle here", Jev decides what the sentence means, and code draws it in Figma.
+这是一个 **Jev 模型实验项目**：你说“在这里加一个圆”，Jev 判断这句话是什么意思，再由程序在 Figma 里画出来。
 
-The question this project is trying to answer: **can a handful of small multiple-choice questions be composed into different design operations?** Figma is the canvas where the result is observed.
+我们想试的是：**把一句话拆成几道小选择题，能不能组合出不同的设计操作？** Figma 是观察结果的画布。
 
-## How one sentence becomes an operation
+## 一句话是怎么变成操作的？
 
-![One natural-language sentence is fanned out to three Jev questions; code aggregates the answers and calls the Figma API to create a circle on the canvas](docs/jev-flow.en.svg)
+![自然语言分给三个 Jev 判断节点，程序汇总后调用 Figma API，在画布创建圆形](docs/jev-flow.svg)
 
-Take "add a circle here". The diagram keeps only three questions: **what to do → add, what shape → circle, where → here**. They are judged in parallel; the other questions are elided.
+以“在这里加一个圆”为例，图中只保留 3 道小选择题：**做什么 → 添加、什么形状 → 圆、放哪里 → 这里**。它们同时判断，其他节点用“…”省略。
 
-Code aggregates the answers, validates them, then calls `figma.createEllipse()` to create the node, `node.resize(80, 80)` to make it a circle, and sets `node.x / node.y` to the drop point. **Jev picks answers; code calls the API.** The coordinates for "here" come from the anchor you dragged onto the canvas — the model never guesses them. 80 × 80 is a default in code.
+程序汇总答案并检查后，调用 `figma.createEllipse()` 创建图形，用 `node.resize(80, 80)` 设为圆，再把 `node.x / node.y` 设为画布落点。**Jev 选答案，代码调用 API。** “这里”的坐标来自你拖放的定位点，不由模型猜测；80 × 80 是代码里的默认尺寸。
 
-Each node is one question sent to the same Jev model. Jev returns the chosen option, a probability per option, and a confidence score. If it is not confident, code asks again; if it is still unclear, nothing executes. The diagram is an illustration of the flow, not a recorded run.
+每个节点是交给同一个 Jev 模型的一道题。Jev 返回选项、概率和置信度；不明确时程序会复问，仍不明确就不执行。图中是流程示例，不是实测记录。
 
-Say "add a rectangle" instead and the same questions are reused — only the code changes, to `figma.createRectangle()`. That composability is what this project exists to test.
+换成“加一个矩形”，仍复用这些问题，再由代码选择对应的 `figma.createRectangle()`。这就是本项目要验证的组合方式。
 
-## What is Jev?
+## 快速开始
 
-[Jev](https://docs.typesafe.ai/model-jaggedness/jev-1.13) is TypeSafe's **System One** model (released September 2026, current version `jev-1.13`). It does not generate text. You send it a state plus a set of typed questions, and it returns one decision per question:
-
-- **Choice** — pick one option from a set you define; returns the pick, a probability per option, and a confidence score.
-- **Score** — place the state on an ordered rubric you describe.
-- **Noul** — yes/no, as a probability between 0 and 1.
-
-All questions in one request are evaluated in parallel against the same state, so adding questions barely changes latency. There is no chat, no generated code, no explanation.
-
-That shape is the reason this plugin works the way it does: the model is not asked to emit a DSL or a JSON patch. It answers closed questions, and code does the rest.
-
-## Quick start
-
-You need **Node.js 20+**, the **Figma desktop app**, and a **TypeSafe API Key**.
+需要 **Node.js 20+、Figma 桌面版、TypeSafe API Key**。
 
 ```bash
 npm ci
@@ -41,46 +29,44 @@ npm run build
 npm run jev
 ```
 
-1. In the Figma desktop app, choose **Plugins → Development → Import plugin from manifest…** and pick `manifest.json` in this folder.
-2. Open the plugin, click the gear icon, enter your TypeSafe API Key and connect. The local service listens on `http://localhost:8788`.
-3. Drag the crosshair button below the text box onto empty canvas in the current page and wait for it to turn green. That drop point is what "here" refers to.
-4. Type "add a rectangle here" and press Run, then keep refining it sentence by sentence. For exact sizes include `px`.
+1. 在 Figma 桌面版选择 **Plugins → Development → Import plugin from manifest…**，导入本目录 `manifest.json`。
+2. 打开插件，点击连接设置，输入 TypeSafe API Key 并连接。本机服务地址为 `http://localhost:8788`。
+3. 将输入框下方的定位图标拖到当前页面的空白画布，等图标变绿。这个真实落点就是指令中的“这里”。
+4. 输入“在这里加一个矩形”，点击“执行”；随后逐句修改。精确尺寸请带上 `px` 或“像素”。
 
-Without a drop point the plugin will not create objects; editing existing objects does not need one. Creating a button requires a single usable local button component in the file.
+没有明确落点时不能创建对象；修改已有对象无需重新定位。创建按钮需要文件中存在唯一可用的本地按钮组件。
 
-The key is kept only in the local service process memory — never written to the Figma document, plugin storage, or build output. You can also supply it via the `TYPESAFE_API_KEY` environment variable. Restarting the service clears it. After changing plugin code, rebuild and reopen the plugin; after changing server code, restart the service.
+Key 只保存在本机服务进程内存中，不写入 Figma 文档、插件存储或构建产物；也可通过环境变量 `TYPESAFE_API_KEY` 提供。重启服务后需重新配置。更新插件代码后重新构建并重开插件；更新服务代码后重启服务。
 
-> The plugin UI is currently Chinese-only. The instructions it sends to Jev are Chinese too — TypeSafe documents English as Jev's primary language, so English instructions may calibrate better.
+## 可以拿它试什么？
 
-## What you can try
-
-| Object or action | Currently implemented |
+| 对象或操作 | 当前实现 |
 | --- | --- |
-| Circle, rectangle | create, scale as a whole, fill, stroke; rectangles support width/height and corner radius |
-| Text | standalone text, text centered inside a shape, the single editable text slot in a component |
-| Button component | instantiates an existing component; adjusts semantic type and size by available variants |
-| Generic actions | duplicate, move, arrange, delete and undo on supported objects |
+| 圆、矩形 | 创建、整体缩放、填充、描边；矩形支持宽高和圆角 |
+| 文字 | 独立文字、图形内居中文字、组件中唯一可编辑的文字位置 |
+| 按钮组件 | 使用已有组件实例；按可用变体调整语义类型与尺寸 |
+| 通用操作 | 对支持的对象复制、移动、排列、删除和撤销 |
 
-One sentence handles at most three related clauses. Duplicate and arrange support up to 20 objects at a time. "Duplicate nine" and "duplicate to nine" mean nine new objects and nine total, respectively.
+一句话最多处理三个前后有关联的分句；复制／排列一次最多支持 20 个对象。“复制九份”与“复制成九份”分别表示新增数量和最终总数。
 
-Not supported: targeting by name, creating arbitrary components, arbitrarily deep hierarchies, gradients / highlights / shadows, and independent color or bold control for text nested in a shape. Circles do not support per-axis size or corner radius. Deleting intrinsic properties such as width and height is rejected, and a button's semantic variant cannot be faked with a plain fill change.
+暂不支持按名称定位、通用组件创建、任意复杂层级、渐变／高光／阴影，以及图形内关联文字的独立颜色和粗体调整。圆不支持单轴宽高和圆角。删除宽高等固有属性会被拒绝；按钮的语义变体也不能用普通改色冒充。
 
-## Current limitations
+## 目前有哪些限制？
 
-Text input is the reliable path today. Speech recognition is not done by Jev; when speech is available, each finished short sentence is queued and executed automatically, while interim transcript text is not. The Figma desktop app currently returns `not-allowed`, meaning speech input is refused before Jev is ever reached — the cause still needs investigation on real hardware.
+先用文字输入体验。语音识别不由 Jev 完成；语音可用时，每说完一个短句就会自动排队执行，未说完的临时文字不会执行。目前 Figma 桌面版已出现 `not-allowed`，即语音输入被拒绝，还没到 Jev 这一步，原因待实机排查。
 
-## Development
+## 开发与验证
 
-| File | Responsibility |
+| 文件 | 职责 |
 | --- | --- |
-| `server/questions.mjs`, `server/interpret.mjs` | Jev question definitions, requests, per-clause understanding |
-| `server/compose.mjs`, `server/text-content.mjs` | command composition, extracting numbers and text from the original sentence |
-| `server/jev.mjs` | local service, key handling, health check |
-| `src/ui.ts`, `src/voice-queue.ts` | UI, speech input and the ordered queue |
-| `src/live-edit.ts`, `src/object-adapters.ts` | target validation, Figma operations, rollback and undo |
-| `src/workflow.ts` | canvas drop point and button component lookup |
+| `server/questions.mjs`、`server/interpret.mjs` | Jev 问题定义、请求与分句理解 |
+| `server/compose.mjs`、`server/text-content.mjs` | 命令合成、原文数字与文字提取 |
+| `server/jev.mjs` | 本机服务、Key 配置与健康检查 |
+| `src/ui.ts`、`src/voice-queue.ts` | 界面、语音输入与顺序队列 |
+| `src/live-edit.ts`、`src/object-adapters.ts` | 目标校验、Figma 操作、回滚与撤销 |
+| `src/workflow.ts` | 画布落点与按钮组件查找 |
 
-Adding a new operation means both teaching Jev to recognise it and writing the validation and execution code. Adding an option alone does not give Figma a new capability.
+想增加一种操作，需要让 Jev 能识别它，也要给程序补上检查和执行代码。只加一个选项，Figma 不会自动获得新能力。
 
 ```bash
 npm run check
@@ -89,10 +75,6 @@ npm run build
 npm run smoke
 ```
 
-The checks above pass and are documented: they cover parsing, speech-queue deduplication, the local service, and simulated Figma operations. **That is not the same as real end-to-end verification.** Real Jev requests and real Figma writes have not been signed off yet, and desktop speech has the failure noted above. Chinese free-form phrasing and the confidence thresholds still need calibration against the live API.
+已有文档记录以上检查通过，覆盖解析、语音队列去重、本机服务及模拟 Figma 操作；这不等于真实端到端通过。**真实 Jev 请求和真实 Figma 写入尚未记录验收通过，桌面版语音已有上述失败反馈。** 中文自由表达和置信度仍需真实 API 校准。
 
-References: [TypeSafe API](https://docs.typesafe.ai/api) · [Jev known limitations](https://docs.typesafe.ai/model-jaggedness/jev-1.13) · [Figma plugin docs](https://developers.figma.com/docs/plugins/plugin-quickstart-guide/)
-
-## License
-
-MIT
+参考：[TypeSafe API](https://docs.typesafe.ai/api) · [Jev 已知限制](https://docs.typesafe.ai/model-jaggedness/jev-1.13) · [Figma 插件开发](https://developers.figma.com/docs/plugins/plugin-quickstart-guide/)
