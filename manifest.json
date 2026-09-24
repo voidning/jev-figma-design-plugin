@@ -1,5 +1,5 @@
 {
-  "name": "Jev 自然语言设计（可组合）",
+  "name": "Jev NL Design（自然语言设计）",
   "id": "jev-natural-language-design-composable",
   "api": "1.0.0",
   "main": "dist/code.js",
