@@ -8,7 +8,7 @@ The question this project is trying to answer: **can a handful of small multiple
 
 ## How one sentence becomes an operation
 
-![One natural-language sentence is fanned out to three Jev questions; code aggregates the answers and calls the Figma API to create a circle on the canvas](docs/jev-flow.en.svg)
+![One natural-language sentence is fanned out to three Jev questions; code aggregates the answers and calls the Figma API to create a circle on the canvas](docs/jev-flow.en.png)
 
 Take "add a circle here". The diagram keeps only three questions: **what to do → add, what shape → circle, where → here**. They are judged in parallel; the other questions are elided.
 
